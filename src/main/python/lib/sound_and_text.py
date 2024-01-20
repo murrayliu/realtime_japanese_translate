@@ -2,9 +2,8 @@ import yaml
 import wave
 import pyaudio
 import threading
-import numpy as np
 from enum import Enum
-import assemblyai as aai
+import speech_recognition as sr
 
 TARGET = "立體聲混音"
 
@@ -16,7 +15,9 @@ class Recorder(object):
         self.rate = cfg[CfgEnum.rate]
         self._running = True
         self._frames = []
-
+        self.recognizer = sr.Recognizer()
+        self.cfg = cfg
+        self.p = pyaudio.PyAudio()
     def findInternalRecordingDevice(self, p):
 
         for i in range(p.get_device_count()):
@@ -32,12 +33,12 @@ class Recorder(object):
         # === sound input setup ===
         self._running = True
         self._frames = []
-        p = pyaudio.PyAudio()
-        dev_idx = self.findInternalRecordingDevice(p)
+        
+        dev_idx = self.findInternalRecordingDevice(self.p)
         if dev_idx < 0:
             return
     
-        stream = p.open(input_device_index=dev_idx,
+        stream = self.p.open(input_device_index=dev_idx,
                         format=self.format,
                         channels=self.channels,
                         rate=self.rate,
@@ -46,11 +47,16 @@ class Recorder(object):
         
         # === loop over internal sound ===
         while (self._running):
-            data = stream.read(self.chucnk)
-            self._frames.append(data)
-            
+            # data = stream.read(self.chucnk)
+            data = stream.read(self.rate * 5)
+
+            # self._frames.append(data)
+            try:
+                audio_data_instance = sr.AudioData(data, 44100, 2)
+                print(self.recognizer.recognize_google(audio_data_instance, show_all=False))
             # === sound to text ===
-            
+            except:
+                pass
 
             # === text to text ===
 
@@ -60,33 +66,15 @@ class Recorder(object):
 
         stream.stop_stream()
         stream.close()
-        p.terminate()
+        self.p.terminate()
+
         return
 
     def stop(self):
         self._running = False
     
-    def save(self, wav_path):
-        p = pyaudio.PyAudio()
-        wf = wave.open(wav_path, 'wb')
-        wf.setnchannels(self.channels)
-        wf.setsampwidth(p.get_sample_size(self.format))
-        wf.setframerate(self.rate)
-        wf.writeframes(b''.join(self._frames))
-        wf.close()
-        p.terminate()
-
-        # === debug ===
-        print("start access api")
-        aai.settings.api_key = "6ea73535df834863afd8815e58563f13"
-        transcriber = aai.Transcriber()
-        print("finish access api")
-        # transcript = transcriber.transcribe("https://storage.googleapis.com/aai-web-samples/news.mp4")
-        transcript = transcriber.transcribe(wav_path)
-        print(transcript.text)
 
 
-    
 class SoundToSubTitle(object):
     def __init__(self, cfg):
         self.cfg = cfg
@@ -108,11 +96,6 @@ class SoundToSubTitle(object):
                 if input_key == self.cfg[CfgEnum.stop_key]:
                     running = False
                     recorder.stop()
-
-                    # === debug ===
-                    wav_path = "record/rec_v1.wav"
-                    recorder.save(wav_path)
-
 
 def sound_to_text():
     pass
