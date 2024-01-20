@@ -11,7 +11,17 @@
 
 ---
 
+# To Do List
+
+- [ ] versopm 0: language-> english
+- [ ] version 1: use cmd to start and stop record in japanese languages
+- [ ] version 2: design ui (language selection / start record / stop record)
+- [ ] pack to exe
+
+---
+
 # Working log
+
 # 1/20
 * upload code
   - read from internal sound and save to wav

@@ -1,0 +1,8 @@
+# === read sound parameter ===
+samplerate: 44100  
+duration: 10       
+n_channels: 2
+rate: 44100
+chucnk: 1024
+start_key: r
+stop_key: q
