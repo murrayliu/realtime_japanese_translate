@@ -13,5 +13,5 @@
 
 # Working log
 # 1/20
-* up load code
+* upload code
   - read from internal sound and save to wav
